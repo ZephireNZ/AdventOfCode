@@ -14,10 +14,8 @@ abstract class Solver {
     public virtual void PartOne() => Console.WriteLine("PartOne Not Implemented");
     public virtual void PartTwo() => Console.WriteLine("PartTwo Not Implemented");
 
-    public string[] Input
-    {
-        get
-        {
+    public string[] Input {
+        get {
             var path = Path.Combine(Year.ToString(), $"Day{Day}");
             path = Path.Combine(path, "input.txt");
 
