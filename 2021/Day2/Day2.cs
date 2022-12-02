@@ -2,12 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AdventOfCode.Y2021.Day2;
+namespace AdventOfCode.Y2021;
 
 class Day2 : Solver {
-    public override int Year { get; } = 2021;
-    public override int Day { get; } = 2;
-
     public override void PartOne() {
         var input = Input;
         Console.WriteLine($"Read {input.Length} lines of input");

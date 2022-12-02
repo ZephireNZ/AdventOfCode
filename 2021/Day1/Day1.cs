@@ -1,12 +1,9 @@
 using System;
 using System.Linq;
 
-namespace AdventOfCode.Y2021.Day1;
+namespace AdventOfCode.Y2021;
 
 class Day1 : Solver {
-    public override int Year { get; } = 2021;
-    public override int Day { get; } = 1;
-
     public override void PartOne() {
         var input = Input;
 

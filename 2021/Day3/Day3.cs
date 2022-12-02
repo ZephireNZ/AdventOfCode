@@ -3,12 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AdventOfCode.Y2021.Day3;
+namespace AdventOfCode.Y2021;
 
 class Day3 : Solver {
-    public override int Year { get; } = 2021;
-    public override int Day { get; } = 3;
-
     public override void PartOne() {
         var input = Input;
 

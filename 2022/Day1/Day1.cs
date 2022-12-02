@@ -2,12 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AdventOfCode.Y2022.Day1;
+namespace AdventOfCode.Y2022;
 
 class Day1 : Solver {
-    public override int Year { get; } = 2022;
-    public override int Day { get; } = 1;
-
     public override void PartOne() {
         var input = Input
             .Select(i => Int32.TryParse(i, out var tempVal) ? tempVal : (int?) null).ToList();
