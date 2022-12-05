@@ -24,6 +24,18 @@ abstract class Solver {
             return File.ReadAllLines(path);
         }
     }
+
+    public string InputRaw {
+        get {
+
+            var match = new Regex(@"AdventOfCode\.Y(?<YEAR>\d{4})\.Day(?<DAY>\d+)").Match(this.GetType().FullName);
+            var (year, day) = (match.Groups["YEAR"].Value, match.Groups["DAY"].Value);
+
+            var path = Path.Combine(year, $"Day{day}", "input.txt");
+
+            return File.ReadAllText(path);
+        }
+    }
 }
 
 public static class Extensions {
