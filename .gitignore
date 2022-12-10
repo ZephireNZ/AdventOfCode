@@ -8,3 +8,7 @@ obj/
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# AoC asks not to upload input data
+input.txt
+*.data
