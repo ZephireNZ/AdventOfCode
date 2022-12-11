@@ -53,6 +53,18 @@ public static class Extensions {
 
 class App {
 
+    const string CS_TEMPLATE = @"using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace AdventOfCode.Y{0};
+
+class Day{1} : Solver {{
+    public override void PartOne() {{
+        
+    }}
+}}";
+
     static void RunCommand(int year, int day) {
 
         Console.WriteLine($"Running solver for {year} Day {day}");
@@ -82,6 +94,20 @@ class App {
         var rootCommand = new RootCommand("Solutions for AdventOfCode.");
         rootCommand.AddArgument(yearArg);
         rootCommand.AddArgument(dayArg);
+
+        var createCommand = new Command("create");
+        createCommand.AddArgument(yearArg);
+        createCommand.AddArgument(dayArg);
+        createCommand.SetHandler((year, day) => {
+            var path = Path.Combine(year.ToString(), $"Day{day}");
+            Directory.CreateDirectory(path);
+
+            File.WriteAllText(Path.Combine(path, $"Day{day}.cs"), String.Format(CS_TEMPLATE, year, day));
+            File.Create(Path.Combine(path, "input.txt"));
+            Console.WriteLine($"Done! Created {path}");
+        }, yearArg, dayArg);
+
+        rootCommand.Add(createCommand);
 
         rootCommand.SetHandler(RunCommand, yearArg, dayArg);
 
