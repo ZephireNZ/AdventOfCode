@@ -18,21 +18,27 @@ class Day12 : Solver {
     }
 
     public int ShortestPath((int x, int y) start, (int x, int y) end, char[][] input) {
+        var (_, _, dist) = ShortestPath(end, input, p => p.x == start.x && p.y == start.y);
+
+        return dist;
+    }
+
+    public (int x, int y, int dist) ShortestPath((int x, int y) start, char[][] input, Func<(int x, int y), bool> stopFunction) {
         var h = input.Length;
         var w = input[0].Length;
 
         var visitQueue = new Queue<(int x, int y, int d)>();
         var distance = new Dictionary<(int x, int y), int>();
 
-        visitQueue.Enqueue((end.x, end.y, 0));
-        distance.Add((end.x, end.y), 0);
+        visitQueue.Enqueue((start.x, start.y, 0));
+        distance.Add((start.x, start.y), 0);
 
         while (visitQueue.TryDequeue(out var v)) {
             var value = input[v.y][v.x];
             value = value == 'E' ? 'z' : value;
 
-            if (v.x == start.x && v.y == start.y) {
-                break; // We've found the start
+            if (stopFunction((v.x, v.y))) {
+                return v;
             }
 
             foreach (var n in GetNeighbours(v.x, v.y, w, h)) {
@@ -50,14 +56,7 @@ class Day12 : Solver {
             // Render(distance, w, h, start);
         }
 
-        if (!distance.ContainsKey(start)) {
-            Console.WriteLine($"({start.x}, {start.y}): No path found");    
-            return -1; // Not found
-        }
-
-        Console.WriteLine($"({start.x}, {start.y}): {distance[start]}");
-
-        return distance[start];
+        throw new Exception("No path found!");
     }
 
     public void Render(Dictionary<(int x, int y), int> distances, int w, int h, (int x, int y) start) {
@@ -90,12 +89,7 @@ class Day12 : Solver {
 
         var end = points.Where(v => v.v == 'E').Select(v => (v.x, v.y)).First();
 
-        var shortest = points
-            .Where(v => v.v == 'S' || v.v == 'a')
-            .Select(v => (v.x, v.y))
-            .Select(v => ShortestPath(v, end, input))
-            .Where(v => v >= 0)
-            .Min();
+        var (_,_,shortest) = ShortestPath(end, input, p => input[p.y][p.x] == 'a');
 
         Console.WriteLine($"Shortest of all paths: {shortest}");
     }
