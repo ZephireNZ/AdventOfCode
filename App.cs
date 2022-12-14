@@ -65,7 +65,7 @@ class Day{1} : Solver {{
     }}
 }}";
 
-    static void RunCommand(int year, int day) {
+    static void RunCommand(int year, int day, bool test) {
 
         Console.WriteLine($"Running solver for {year} Day {day}");
 
@@ -75,6 +75,41 @@ class Day{1} : Solver {{
             .Where(t => t.FullName == $"AdventOfCode.Y{year}.Day{day}")
             .Select(t => Assembly.GetEntryAssembly()!.CreateInstance(t.FullName) as Solver)
             .First();
+        
+        var console = Console.Out;
+
+        if (test) {
+            Console.SetOut(TextWriter.Null); // Disable output for code
+
+            DateTime start;
+            TimeSpan duration;
+
+            var part1Times = new List<double>();
+            var part2Times = new List<double>();
+
+            foreach (var _ in Enumerable.Range(0, 5)) // Repeat 10x
+            {
+                start = DateTime.Now;
+                solver.PartOne();
+                duration = DateTime.Now - start;
+                part1Times.Add(duration.TotalMilliseconds);
+
+                start = DateTime.Now;
+                solver.PartTwo();
+                duration = DateTime.Now - start;
+                part2Times.Add(duration.TotalMilliseconds);
+            }
+
+            Console.SetOut(console);
+
+            Console.WriteLine("=== TEST RESULTS ===");
+            Console.WriteLine($"Part 1: {part1Times.Average().ToString()}ms");
+            Console.WriteLine($"Part 2: {part2Times.Average().ToString()}ms");
+
+            return;
+        }
+        
+        
         
         solver.PartOne();
         solver.PartTwo();
@@ -91,9 +126,16 @@ class Day{1} : Solver {{
             description: "Day to execute solution for"
         );
 
+        var testOpt = new Option<bool>(
+            name: "--test",
+            description: "Measure performance of code",
+            getDefaultValue: () => false
+        );
+
         var rootCommand = new RootCommand("Solutions for AdventOfCode.");
         rootCommand.AddArgument(yearArg);
         rootCommand.AddArgument(dayArg);
+        rootCommand.AddOption(testOpt);
 
         var createCommand = new Command("create");
         createCommand.AddArgument(yearArg);
@@ -109,7 +151,7 @@ class Day{1} : Solver {{
 
         rootCommand.Add(createCommand);
 
-        rootCommand.SetHandler(RunCommand, yearArg, dayArg);
+        rootCommand.SetHandler(RunCommand, yearArg, dayArg, testOpt);
 
         return await rootCommand.InvokeAsync(args);
     }
