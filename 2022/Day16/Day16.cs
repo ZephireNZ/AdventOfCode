@@ -57,6 +57,8 @@ class Day16 : Solver {
             maxFlow = Math.Max(maxFlow, FindMaxFlow(visited.Append(n), others.Append((n, remainingMins - dist - 1))));
         }
 
+        maxFlow = Math.Max(maxFlow, FindMaxFlow(visited.Append(valve), others.Append((valve, 0))));
+
         return valveFlow + maxFlow;
     }
 
