@@ -17,94 +17,143 @@ class Day24 : Solver {
         return Math.Abs(p1.x - p2.x) + Math.Abs(p1.y - p2.y);
     }
 
-    public List<(int x, int y, Direction d)> MoveBlizzards(
-        List<(int x, int y, Direction d)> blizzards, 
-        char[][] map)
-    {
-        return blizzards.Select(b => {
-            (int x, int y) newPos = b.d switch {
-                Direction.LEFT => (b.x - 1, b.y),
-                Direction.RIGHT => (b.x + 1, b.y),
-                Direction.UP => (b.x, b.y - 1),
-                Direction.DOWN => (b.x, b.y + 1),
-                _ => throw new ArgumentException()
-            };
+    public class Blizzard {
+        private (int x, int y) start;
+        private Direction d;
+        private int h;
+        private int w;
 
-            if (map[newPos.y][newPos.x] == '#') {
-                newPos = b.d switch {
-                    Direction.LEFT => (map[b.y].Length - 2, b.y),
-                    Direction.RIGHT => (1, b.y),
-                    Direction.UP => (b.x, map.Length - 2),
-                    Direction.DOWN => (b.x, 1),
-                    _ => throw new ArgumentException()
-                };
-            }
-
-            return (newPos.x, newPos.y, b.d);
-        })
-        .ToList();
-
-        
-    }
-
-    public int FindShortestPath(
-        (int x, int y) pos, 
-        List<(int x, int y, Direction d)> blizzards,
-        char[][] map,
-        (int x, int y) target,
-        int shortest)
-    {
-        if (Manhattan(pos, target) > shortest) return shortest; // Impossible
-
-        var newPos = new List<(int x, int y)> {
-            (pos.x + 1, pos.y),
-            (pos.x - 1, pos.y),
-            (pos.x, pos.y + 1),
-            (pos.x, pos.y - 1),
-            pos
-        };
-
-        blizzards = MoveBlizzards(blizzards, map);
-
-        foreach (var p in newPos) {
-            if(blizzards.Any(b => b.x == p.x && b.y == p.y)) continue; // not possible
-            
-            if(p == target) return 1; // We've found the target
-
-            if(p.y < 0) continue; // Edge case for start of map
-
-            if (map[p.y][p.x] == '#') continue; // can't move into a wall
-
-            var res = FindShortestPath(p, blizzards, map, target, shortest - 1) + 1;
-
-            if (res < shortest) shortest = res;
+        public Blizzard((int x, int y) start, Direction d, char[][] map) {
+            this.start = start;
+            this.d = d;
+            this.h = map.Length - 2;
+            this.w = map[0].Length - 2;
         }
 
-        return shortest;
-        
+        public (int x, int y) GetRowColRef() {
+            switch (d) {
+                case Direction.LEFT:
+                case Direction.RIGHT:
+                    return (0, this.start.y);
+                case Direction.UP:
+                case Direction.DOWN:
+                    return (this.start.x, 0);
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public bool IsAtLocation(int t, (int x, int y) loc) {
+            switch (d) {
+                case Direction.LEFT:
+                case Direction.RIGHT:
+                    if (start.y != loc.y) return false;
+
+                    var x = start.x - 1; // Makes calculations easier
+                    var offsetX = d == Direction.RIGHT ? t : -t;
+                    x = (x + offsetX) % w;
+                    x = x < 0 ? w + x : x;
+
+                    return x + 1 == loc.x;
+                case Direction.UP:
+                case Direction.DOWN:
+                    if(start.x != loc.x) return false;
+                    
+                    var y = start.y - 1; // Makes calculations easier
+                    var offsetY = d == Direction.DOWN ? t : -t;
+                    y = (y + offsetY) % h;
+                    y = y < 0 ? h + y : y;
+
+                    return y + 1 == loc.y;
+                default:
+                    throw new ArgumentException();
+            }
+
+
+        }
+
+    }
+
+    public int FindShortestBFS(
+        (int x, int y) start,
+        (int x, int y) end,
+        Dictionary<int, List<(int x, int y, int t)>> positions,
+        int cycleTime
+    ) {
+        var visited = new HashSet<(int x, int y, int t)>();
+        var visitQueue = new PriorityQueue<(int x, int y, int t), int>();
+
+        visitQueue.Enqueue((start.x, start.y, 0), Manhattan(start, end));
+        visited.Add((start.x, start.y, 0));
+
+        while (visitQueue.TryDequeue(out var pos, out var _)) {
+            var t = (pos.t + 1);
+
+            var newPos = new List<(int x, int y, int t)> {
+                (pos.x + 1, pos.y, t),
+                (pos.x - 1, pos.y, t),
+                (pos.x, pos.y + 1, t),
+                (pos.x, pos.y - 1, t),
+                (pos.x, pos.y, t),
+            };
+
+            foreach (var p in newPos) {
+                if(p.x == end.x && p.y == end.y) return p.t; // We've found the target
+
+                var pNorm = (p.x, p.y, p.t % cycleTime);
+                
+                if(visited.Contains(pNorm)) continue;
+
+                if(positions[t % cycleTime].Contains(pNorm)) {
+                    visitQueue.Enqueue(p, Manhattan((p.x, p.y), end));
+                    visited.Add(pNorm);
+                }
+            }
+        }
+
+        return -1; // Unable to find a path
     }
 
     public override void PartOne() {
         var input = Input;
 
         var map = input
-            .Select(l => l.Select(c => c switch {
-                '#' => '#',
-                '.' => '.',
-                _ => '.'
-            }).ToArray())
+            .Select(l => l.ToArray())
             .ToArray();
 
         var blizzards = input
             .Select((l, y) => l.Select((d, x) => (x, y, d: (Direction) d)))
             .SelectMany(b => b)
             .Where(b => Enum.GetValues<Direction>().Contains(b.d))
-            .ToList();
+            .Select(b => new Blizzard((b.x, b.y), b.d, map))
+            .GroupBy(b => b.GetRowColRef())
+            .ToDictionary(g => g.Key, g => g.ToList());
 
         var start = (x: input.First().IndexOf('.'), y: 0);
         var end = (x: input.Last().IndexOf('.'), y: input.Length - 1);
 
-        var shortest = FindShortestPath(start, blizzards, map, end, 200);
+        var cycleTime = MathHelpers.LeastCommonMultiple<int>(map.Length - 2, map[0].Length - 2);
+
+        var positions = new Dictionary<int, List<(int x, int y, int t)>>();
+
+        for(var t = 0; t < cycleTime; t++) {
+            positions[t] = new List<(int x, int y, int t)>();
+            positions[t].Add((1, 0, t));
+            
+            for (var x = 1; x < map[0].Length - 1; x++) {
+                for (var y = 1; y < map.Length - 1; y++) {
+                    List<Blizzard> bliz;
+                    if (blizzards.TryGetValue((x, 0), out bliz) ? bliz.Any(b => b.IsAtLocation(t, (x, y))) : false) continue;
+                    if (blizzards.TryGetValue((0, y), out bliz) ? bliz.Any(b => b.IsAtLocation(t, (x, y))) : false) continue;
+
+
+                    positions[t].Add((x, y, t));
+                } 
+            }
+        }
+
+
+        var shortest = FindShortestBFS(start, end, positions, cycleTime);
 
         Console.WriteLine($"Shortest Path: {shortest}");
 
