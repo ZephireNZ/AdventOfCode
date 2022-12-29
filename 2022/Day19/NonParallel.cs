@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode.Y2022;
 
-class Day19 : Solver {
+class Day19NonParallel : Solver {
 
     public enum Material {
         GEODE,
