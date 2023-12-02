@@ -147,14 +147,14 @@ class Day{1} : Solver {{
             File.WriteAllText(Path.Combine(path, $"Day{day}.cs"), String.Format(CS_TEMPLATE, year, day));
             File.Create(Path.Combine(path, "input.txt"));
 
-            var launchStr = File.ReadAllText(Path.Combine(".vscode", "launch.json"));
-
-            launchStr = Regex.Replace(
-                launchStr,
-                @"""args"": \[""\d+"", ""\d+""\]",    
-                $"\"args\": [\"{year}\", \"{day}\"]");
-
-            File.WriteAllText(Path.Combine(".vscode", "launch.json"), launchStr);
+            // var launchStr = File.ReadAllText(Path.Combine(".vscode", "launch.json"));
+            //
+            // launchStr = Regex.Replace(
+            //     launchStr,
+            //     @"""args"": \[""\d+"", ""\d+""\]",
+            //     $"\"args\": [\"{year}\", \"{day}\"]");
+            //
+            // File.WriteAllText(Path.Combine(".vscode", "launch.json"), launchStr);
 
             Console.WriteLine($"Done! Created {path}");
         }, yearArg, dayArg);
