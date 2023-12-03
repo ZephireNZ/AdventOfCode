@@ -103,8 +103,8 @@ class Day{1} : Solver {{
             Console.SetOut(console);
 
             Console.WriteLine("=== TEST RESULTS ===");
-            Console.WriteLine($"Part 1: {part1Times.Average().ToString()}ms");
-            Console.WriteLine($"Part 2: {part2Times.Average().ToString()}ms");
+            Console.WriteLine($"Part 1: {part1Times.Average():N3}ms");
+            Console.WriteLine($"Part 2: {part2Times.Average():N3}ms");
 
             return;
         }
