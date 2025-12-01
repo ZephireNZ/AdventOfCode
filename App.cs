@@ -6,16 +6,25 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace AdventOfCode;
 
-abstract class Solver {
+abstract class Solver
+{
+    private static readonly ILoggerFactory LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
+    {
+        builder.AddConsole();
+        builder.AddFilter("AdventOfCode", LogLevel.Information);
+    });
+
     public virtual void PartOne() => Console.WriteLine("PartOne Not Implemented");
     public virtual void PartTwo() => Console.WriteLine("PartTwo Not Implemented");
 
+    protected ILogger Logger => LoggerFactory.CreateLogger("AdventOfCode");
+
     public string[] Input {
         get {
-
             var match = new Regex(@"AdventOfCode\.Y(?<YEAR>\d{4})\.Day(?<DAY>\d+)").Match(this.GetType().FullName);
             var (year, day) = (match.Groups["YEAR"].Value, match.Groups["DAY"].Value);
 
@@ -80,6 +89,7 @@ class Day{1} : Solver {{
 
         if (test) {
             Console.SetOut(TextWriter.Null); // Disable output for code
+            // TODO: Replace with logger changes
 
             DateTime start;
             TimeSpan duration;
@@ -118,12 +128,14 @@ class Day{1} : Solver {{
     static async Task<int> Main(string[] args) {
         var yearArg = new Argument<int>(
             name: "year",
-            description: "Year to execute solution for"
+            description: "Year to execute solution for",
+            getDefaultValue: () => DateTime.Now.Year
         );
 
         var dayArg = new Argument<int>(
             name: "day",
-            description: "Day to execute solution for"
+            description: "Day to execute solution for",
+            getDefaultValue: () => DateTime.Now.Day
         );
 
         var testOpt = new Option<bool>(
