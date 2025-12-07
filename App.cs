@@ -4,6 +4,7 @@ using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -58,6 +59,9 @@ public static class Extensions {
         second = list.Count > 1 ? list[1] : default(T); // or throw
         rest = list.Skip(2).ToList();
     }
+
+    public static string ToCharString(this IEnumerable<char> chars)
+        => chars.Aggregate(new StringBuilder(), (sb, c) => sb.Append(c)).ToString();
 }
 
 class App {
