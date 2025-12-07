@@ -24,26 +24,31 @@ abstract class Solver
 
     protected ILogger Logger => LoggerFactory.CreateLogger("AdventOfCode");
 
-    public string[] Input {
+    protected string[] Input {
         get {
+            if (field != null) return field;
+
             var match = new Regex(@"AdventOfCode\.Y(?<YEAR>\d{4})\.Day(?<DAY>\d+)").Match(this.GetType().FullName);
             var (year, day) = (match.Groups["YEAR"].Value, match.Groups["DAY"].Value);
 
             var path = Path.Combine(year, $"Day{day}", "input.txt");
 
-            return File.ReadAllLines(path);
+            field = File.ReadAllLines(path);
+            return field;
         }
     }
 
-    public string InputRaw {
+    protected string InputRaw {
         get {
+            if (field != null) return field;
 
             var match = new Regex(@"AdventOfCode\.Y(?<YEAR>\d{4})\.Day(?<DAY>\d+)").Match(this.GetType().FullName);
             var (year, day) = (match.Groups["YEAR"].Value, match.Groups["DAY"].Value);
 
             var path = Path.Combine(year, $"Day{day}", "input.txt");
 
-            return File.ReadAllText(path);
+            field = File.ReadAllText(path);
+            return field;
         }
     }
 }
